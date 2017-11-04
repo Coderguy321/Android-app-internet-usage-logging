@@ -1,4 +1,5 @@
 import datetime
+import json
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -76,7 +77,7 @@ class SngcVisualisationView(View):
         return super(SngcVisualisationView, self).dispatch(request, *args, **kwargs)
 
     def post(self, request):
-        data = request.POST
+        data = json.loads(request.body.decode("UTF-8"))
         div_id = data.get('deviceId')
         unique_id = get_random_string(length=10)
         if not User.objects.filter(device_id=div_id):
