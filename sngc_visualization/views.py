@@ -97,46 +97,60 @@ class SngcVisualisationView(View):
 
 
     def get(self, request, *args, **kwargs):
-        f ={
-              "chart": {
-                "caption": "App Usage Analysis",
-                "subCaption": "",
-                "xAxisName": "App",
-                "yAxisName": "Usage Duration (in miliseconds)",
-                "theme": "fint"
+        data = request.GET
+        authentication_token = data.get('key')
+        id = None
+        applog = None
+        try:
+            id = User.objects.get(unique_id = authentication_token)
+        # todo: change the exception type to DoesNotExist exception
+        except:
+            print ("No entry in table for user_id: " + str(authentication_token))
+
+        try:
+            applogs = AppLogs.objects.filter(user=id)
+        except:
+            print ("No App logs for user_id: " + str(authentication_token))
+
+        return JsonResponse({'data':
+            [
+              {
+                  "label": "Whatsapp",
+                  "value": "4009"
               },
-
-                "data": [{
-                "label": "Whatsapp",
-                "value": "4009"
-                }, {
-                    "label": "Facebook",
-                    "value": "3010"
-                }, {
-                    "label": "Instagram",
-                    "value": "749"
-                }, {
-                    "label": "Zomato",
-                    "value": "809"
-                }, {
-                    "label": "Quora",
-                    "value": "1003"
-                }, {
-                    "label": "Camera",
-                    "value": "501"
-                }, {
-                    "label": "Notes",
-                    "value": "889"
-                }, {
-                    "label": "Ola",
-                    "value": "1200"
-                }, {
-                    "label": "Uber",
-                    "value": "978"
-                }]
-
-            }
-        return JsonResponse(f)
+              {
+                  "label": "Facebook",
+                  "value": "3010"
+              },
+              {
+                  "label": "Instagram",
+                  "value": "749"
+              },
+              {
+                  "label": "Zomato",
+                  "value": "809"
+              },
+              {
+                  "label": "Quora",
+                  "value": "1003"
+              },
+              {
+                  "label": "Camera",
+                  "value": "501"
+              },
+              {
+                  "label": "Notes",
+                  "value": "889"
+              },
+              {
+                  "label": "Ola",
+                  "value": "1200"
+              },
+              {
+                  "label": "Uber",
+                  "value": "978"
+              }
+            ]})
 
 
 
