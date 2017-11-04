@@ -79,9 +79,8 @@ class SngcVisualisationView(View):
         data = request.POST
         div_id = data.get('deviceId')
         unique_id = get_random_string(length=10)
-
-        if User.objects.filter(device_id=div_id) is None:
-            User(device_id = div_id, unique_id = unique_id)
+        if not User.objects.filter(device_id=div_id):
+            User.objects.create(device_id = div_id, unique_id = unique_id)
 
         user = User.objects.get(device_id=div_id)
         app_name = data.get('appName')
@@ -90,6 +89,7 @@ class SngcVisualisationView(View):
         last_time_used = data.get('lastTimeUsed')
         total_foreground_time_epoch = data.get('totalTimeInForeground')
         total_foreground_time = datetime.datetime.fromtimestamp(int(total_foreground_time_epoch)).strftime('%Y-%m-%d %H:%M:%S')
+        print(app_name, total_foreground_time)
         model_obj = AppLogs.objects.create(app_name=app_name,first_timestamp=first_timestamp,last_timestamp=last_timestamp,
                         last_time_used=last_time_used, total_foreground_time=total_foreground_time, user = user)
 
