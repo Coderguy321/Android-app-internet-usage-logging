@@ -86,9 +86,11 @@ class SngcVisualisationView(View):
         user = User.objects.get(device_id=div_id)
         app_name = data.get('appName')
         first_timestamp = data.get('firstTimeStamp')
-        last_timestamp = data.get('lastTimeStamp')
-        last_time_used = data.get('lastTimeUsed')
-        total_foreground_time_epoch = data.get('totalTimeInForeground')
+        last_timestamp_epoch = int(data.get('lastTimestamp'))/1000
+        last_time_used_epoch = int(data.get('lastTimeUsed'))/1000
+        total_foreground_time_epoch = int(data.get('totalTimeInForeground'))/1000
+        last_timestamp =  datetime.datetime.fromtimestamp(int(last_timestamp_epoch)).strftime('%Y-%m-%d %H:%M:%S')
+        last_time_used = datetime.datetime.fromtimestamp(int(last_time_used_epoch)).strftime('%Y-%m-%d %H:%M:%S')
         total_foreground_time = datetime.datetime.fromtimestamp(int(total_foreground_time_epoch)).strftime('%Y-%m-%d %H:%M:%S')
         print(app_name, total_foreground_time)
         model_obj = AppLogs.objects.create(app_name=app_name,first_timestamp=first_timestamp,last_timestamp=last_timestamp,
