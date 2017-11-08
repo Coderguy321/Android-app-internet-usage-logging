@@ -122,3 +122,4 @@ class SngcVisualisationView(View):
                                           {"value": "3326", "label": "Quora"}, {"value": "2095", "label": "Camera"},
                                           {"value": "2317", "label": "Notes"}, {"value": "3576", "label": "Ola"},
                                           {"value": "2987", "label": "Uber"}]})
+        return JsonResponse({})
