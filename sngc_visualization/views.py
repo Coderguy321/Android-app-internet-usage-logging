@@ -101,69 +101,24 @@ class SngcVisualisationView(View):
 
     def get(self, request, *args, **kwargs):
         data = request.GET
-        authentication_token = data.get('key')
-        id = None
-        applog = None
-        try:
-            id = User.objects.get(unique_id = authentication_token)
-        # todo: change the exception type to DoesNotExist exception
-        except:
-            print ("No entry in table for user_id: " + str(authentication_token))
-
-        try:
-            applogs = AppLogs.objects.filter(user=id)
-        except:
-            print ("No App logs for user_id: " + str(authentication_token))
-
-        return JsonResponse({'data':
-            [
-              {
-                  "label": "Whatsapp",
-                  "value": "4009"
-              },
-              {
-                  "label": "Facebook",
-                  "value": "3010"
-              },
-              {
-                  "label": "Instagram",
-                  "value": "749"
-              },
-              {
-                  "label": "Zomato",
-                  "value": "809"
-              },
-              {
-                  "label": "Quora",
-                  "value": "1003"
-              },
-              {
-                  "label": "Camera",
-                  "value": "501"
-              },
-              {
-                  "label": "Notes",
-                  "value": "889"
-              },
-              {
-                  "label": "Ola",
-                  "value": "1200"
-              },
-              {
-                  "label": "Uber",
-                  "value": "978"
-              }
-            ]})
-
-
-def get_data_user0(self):
-    return JsonResponse({"data":[{"value": "3706", "label": "Whatsapp"}, {"value": "4924", "label": "Facebook"}, {"value": "2181", "label": "Instagram"}, {"value": "2570", "label": "Zomato"}, {"value": "3821", "label": "Quora"}, {"value": "3965", "label": "Camera"}, {"value": "2709", "label": "Notes"}, {"value": "2370", "label": "Ola"}, {"value": "2723", "label": "Uber"}]})
-
-
-def get_data_user1(self):
-    return JsonResponse({"data":[{"value": "2130", "label": "Whatsapp"}, {"value": "2347", "label": "Facebook"}, {"value": "3316", "label": "Instagram"}, {"value": "3987", "label": "Zomato"}, {"value": "2869", "label": "Quora"}, {"value": "2915", "label": "Camera"}, {"value": "2575", "label": "Notes"}, {"value": "2225", "label": "Ola"}, {"value": "3022", "label": "Uber"}]})
-
-
-def get_data_user2(self):
-    return JsonResponse({"data":[{"value": "3893", "label": "Whatsapp"}, {"value": "3299", "label": "Facebook"}, {"value": "4864", "label": "Instagram"}, {"value": "2962", "label": "Zomato"}, {"value": "3326", "label": "Quora"}, {"value": "2095", "label": "Camera"}, {"value": "2317", "label": "Notes"}, {"value": "3576", "label": "Ola"}, {"value": "2987", "label": "Uber"}]})
-
+        if data.get('key') == 'wxeCwqgggi':
+            return JsonResponse({"data": [{"value": "3706", "label": "Whatsapp"},
+                                          {"value": "4924", "label": "Facebook"},
+                                          {"value": "2181", "label": "Instagram"}, {"value": "2570", "label": "Zomato"},
+                                          {"value": "3821", "label": "Quora"}, {"value": "3965", "label": "Camera"},
+                                          {"value": "2709", "label": "Notes"}, {"value": "2370", "label": "Ola"},
+                                          {"value": "2723", "label": "Uber"}]})
+        if data.get('key') == '10t8YFlPCg':
+            return JsonResponse({"data": [{"value": "2130", "label": "Whatsapp"},
+                                          {"value": "2347", "label": "Facebook"},
+                                          {"value": "3316", "label": "Instagram"}, {"value": "3987", "label": "Zomato"},
+                                          {"value": "2869", "label": "Quora"}, {"value": "2915", "label": "Camera"},
+                                          {"value": "2575", "label": "Notes"}, {"value": "2225", "label": "Ola"},
+                                          {"value": "3022", "label": "Uber"}]})
+        if data.get('key') == 'nxGETSeYPk':
+            return JsonResponse({"data": [{"value": "3893", "label": "Whatsapp"},
+                                          {"value": "3299", "label": "Facebook"},
+                                          {"value": "4864", "label": "Instagram"}, {"value": "2962", "label": "Zomato"},
+                                          {"value": "3326", "label": "Quora"}, {"value": "2095", "label": "Camera"},
+                                          {"value": "2317", "label": "Notes"}, {"value": "3576", "label": "Ola"},
+                                          {"value": "2987", "label": "Uber"}]})
