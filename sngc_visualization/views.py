@@ -155,7 +155,16 @@ class SngcVisualisationView(View):
               }
             ]})
 
+    def get(self, request, *args, **kwargs):
+        data = request.GET
+        unique_id = data.get('id')
+        user_id = User.objects.get(unique_id = unique_id).id
+        appLogs = AppLogs.objects.filter(user = user_id)
 
-
-
+        result = []
+        for entry in appLogs:
+            value = entry.total_foreground_time
+            label = entry.app_name
+            result.append({"label": label,"value": value})
+        return JsonResponse({"data": result})
 
