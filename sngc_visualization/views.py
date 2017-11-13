@@ -8,6 +8,10 @@ from .models import User
 from .models import AppLogs
 from django.http import JsonResponse
 from django.utils.crypto import get_random_string
+from datetime import timedelta
+from django.db.models import Sum, Count, Max, Avg
+
+
 
 class Testing(View):
 
@@ -28,46 +32,19 @@ class Testing(View):
         return JsonResponse({'success':True})
 
     def get(self, request, *args, **kwargs):
-        f ={
-              "chart": {
-                "caption": "App Usage Analysis",
-                "subCaption": "",
-                "xAxisName": "App",
-                "yAxisName": "Usage Duration (in miliseconds)",
-                "theme": "fint"
-              },
+        data = json.loads(request.body.decode("UTF-8"))
+        div_id = data.get('deviceId')
+        unique_id = get_random_string(length=10)
+        user = User.objects.get(device_id=div_id)
+        if not User.objects.filter(device_id=div_id):
+            User.objects.create(device_id=div_id, unique_id=unique_id)
+        complete_data = User.objects.get(id=user.id)
+        result = []
+        for data in complete_data:
+            result.append({"values": data.values, "label": data.label})
 
-                "data": [{
-                "label": "Whatsapp",
-                "value": "4009"
-                }, {
-                    "label": "Facebook",
-                    "value": "3010"
-                }, {
-                    "label": "Instagram",
-                    "value": "749"
-                }, {
-                    "label": "Zomato",
-                    "value": "809"
-                }, {
-                    "label": "Quora",
-                    "value": "1003"
-                }, {
-                    "label": "Camera",
-                    "value": "501"
-                }, {
-                    "label": "Notes",
-                    "value": "889"
-                }, {
-                    "label": "Ola",
-                    "value": "1200"
-                }, {
-                    "label": "Uber",
-                    "value": "978"
-                }]
+        return JsonResponse({'data': result})
 
-            }
-        return JsonResponse(f)
 
 
 class SngcVisualisationView(View):
@@ -85,41 +62,172 @@ class SngcVisualisationView(View):
 
         user = User.objects.get(device_id=div_id)
         app_name = data.get('appName')
-        first_timestamp = data.get('firstTimeStamp')
+        first_timestamp_epoch = int(data.get('firstTimestamp'))/1000
         last_timestamp_epoch = int(data.get('lastTimestamp'))/1000
         last_time_used_epoch = int(data.get('lastTimeUsed'))/1000
-        total_foreground_time_epoch = int(data.get('totalTimeInForeground'))/1000
+        total_foreground_time = int(data.get('totalTimeInForeground'))/1000
+
+        first_timestamp = datetime.datetime.fromtimestamp(int(first_timestamp_epoch)).strftime('%Y-%m-%d %H:%M:%S')
         last_timestamp =  datetime.datetime.fromtimestamp(int(last_timestamp_epoch)).strftime('%Y-%m-%d %H:%M:%S')
         last_time_used = datetime.datetime.fromtimestamp(int(last_time_used_epoch)).strftime('%Y-%m-%d %H:%M:%S')
-        total_foreground_time = datetime.datetime.fromtimestamp(int(total_foreground_time_epoch)).strftime('%Y-%m-%d %H:%M:%S')
-        print(app_name, total_foreground_time)
-        model_obj = AppLogs.objects.create(app_name=app_name,first_timestamp=first_timestamp,last_timestamp=last_timestamp,
+        last_time_used_datetime = datetime.datetime.fromtimestamp(int(last_time_used_epoch))
+
+        try:
+            last_app_log_entry = AppLogs.objects.filter(app_name=app_name).last()
+            if last_app_log_entry.last_timestamp.date() == last_time_used_datetime.date:
+                last_app_log_entry.last_timestamp = last_timestamp
+                last_app_log_entry.save()
+        except Exception as e:
+            model_obj = AppLogs.objects.create(app_name=app_name,first_timestamp=first_timestamp,last_timestamp=last_timestamp,
                         last_time_used=last_time_used, total_foreground_time=total_foreground_time, user = user)
 
         return JsonResponse({'success': True})
 
+    def get(self, request, *args, **kwargs):
+            data = request.GET
+            # data = json.loads(request.body.decode("UTF-8"))
+            div_id = data.get('device_id')  # unique
+            previous_datetime = datetime.datetime.today() - timedelta(days=1)
+            user_id = User.objects.get(unique_id=div_id).id
+            today_applogs = AppLogs.objects.filter(user=user_id, last_timestamp__gte=previous_datetime)
+            result = []
+            for applog in today_applogs:
+                result.append(
+                    {"app_name": applog.app_name, "duration": applog.total_foreground_time, 'time_label': 's'})
 
+            return JsonResponse({'result': result})
+
+
+class CurrentDateView(View):
+    def get(self, request, *args, **kwargs):
+            data = request.GET
+            # data = json.loads(request.body.decode("UTF-8"))
+            div_id = data.get('device_id')  # unique
+            previous_datetime = datetime.datetime.today()
+            user_id = User.objects.get(unique_id=div_id).id
+            today_applogs = AppLogs.objects.filter(user=user_id, last_timestamp__gte=previous_datetime)
+            result = []
+            for applog in today_applogs:
+                result.append(
+                    {"label": applog.app_name, "value": applog.total_foreground_time})
+
+            return JsonResponse({'result': result})
+
+class TotalTimeView(View):
+    def get(self, request, *args, **kwargs):
+            data = request.GET
+            # data = json.loads(request.body.decode("UTF-8"))
+            div_id = data.get('device_id')  # unique
+            user_id = User.objects.get(unique_id=div_id).id
+            top5_applogs = AppLogs.objects.values('app_name').annotate(total_time=Sum('total_foreground_time')).order_by('total_time')[:5]
+            result = []
+            for applog in top5_applogs:
+                print(applog)
+                result.append(
+                    {"label": applog['app_name'], "value": applog['total_time']})
+
+            return JsonResponse({'result': result})
+
+class WeeklyView(View):
+    def get(self, request, *args, **kwargs):
+            data = request.GET
+            # data = json.loads(request.body.decode("UTF-8"))
+            div_id = data.get('device_id')  # unique
+            user_id = User.objects.get(unique_id=div_id).id
+            weeks_before = 1
+            start_date = datetime.datetime.today() - timedelta(days=(7 * 20 + 1))
+            end_date = datetime.datetime.today() - timedelta(days=7*20)
+            result = {}
+            for week in range(1,30):
+                start_date = end_date
+                end_date = end_date + timedelta(days=7)
+
+                top5_applogs = AppLogs.objects.filter(last_timestamp__gte=start_date, last_timestamp__lte=end_date
+                             ).values('app_name'
+                             ).annotate(total_time=Sum('total_foreground_time')
+                             ).order_by('total_time')[:5]
+
+                diff_apps_single_week = []
+                for applog in top5_applogs:
+                    diff_apps_single_week.append(
+                        {"app_name": applog['app_name'], "duration": applog['total_time']})
+                result['weeks'+str(weeks_before)] = diff_apps_single_week
+                weeks_before += 1
+
+            return JsonResponse({'result': result})
+
+class MostUsedView(View):
+    def get(self, request, *args, **kwargs):
+            data = request.GET
+            # data = json.loads(request.body.decode("UTF-8"))
+            div_id = data.get('device_id')  # unique
+            user_id = User.objects.get(unique_id=div_id).id
+
+            max_applog = AppLogs.objects.filter(
+                user=user_id).values(
+                'app_name').annotate(
+                total_time=Sum('total_foreground_time')
+            ).order_by('-total_time').first()
+            return JsonResponse({'result': {'label':max_applog['app_name'],'value':max_applog['total_time']}})
+
+class LeastUsedView(View):
+    def get(self, request, *args, **kwargs):
+            data = request.GET
+            # data = json.loads(request.body.decode("UTF-8"))
+            div_id = data.get('device_id')  # unique
+            user_id = User.objects.get(unique_id=div_id).id
+
+            min_applog = AppLogs.objects.filter(
+                user=user_id).values(
+                'app_name').annotate(
+                total_time=Sum('total_foreground_time')
+            ).order_by('total_time').first()
+            return JsonResponse({'result': {'label':min_applog['app_name'],'value':min_applog['total_time']}})
+
+class Last7DaysView(View):
     def get(self, request, *args, **kwargs):
         data = request.GET
-        if data.get('key') == 'wxeCwqgggi':
-            return JsonResponse({"data": [{"value": "3706", "label": "Whatsapp"},
-                                          {"value": "4924", "label": "Facebook"},
-                                          {"value": "2181", "label": "Instagram"}, {"value": "2570", "label": "Zomato"},
-                                          {"value": "3821", "label": "Quora"}, {"value": "3965", "label": "Camera"},
-                                          {"value": "2709", "label": "Notes"}, {"value": "2370", "label": "Ola"},
-                                          {"value": "2723", "label": "Uber"}]})
-        if data.get('key') == '10t8YFlPCg':
-            return JsonResponse({"data": [{"value": "2130", "label": "Whatsapp"},
-                                          {"value": "2347", "label": "Facebook"},
-                                          {"value": "3316", "label": "Instagram"}, {"value": "3987", "label": "Zomato"},
-                                          {"value": "2869", "label": "Quora"}, {"value": "2915", "label": "Camera"},
-                                          {"value": "2575", "label": "Notes"}, {"value": "2225", "label": "Ola"},
-                                          {"value": "3022", "label": "Uber"}]})
-        if data.get('key') == 'nxGETSeYPk':
-            return JsonResponse({"data": [{"value": "3893", "label": "Whatsapp"},
-                                          {"value": "3299", "label": "Facebook"},
-                                          {"value": "4864", "label": "Instagram"}, {"value": "2962", "label": "Zomato"},
-                                          {"value": "3326", "label": "Quora"}, {"value": "2095", "label": "Camera"},
-                                          {"value": "2317", "label": "Notes"}, {"value": "3576", "label": "Ola"},
-                                          {"value": "2987", "label": "Uber"}]})
-        return JsonResponse({})
+        # data = json.loads(request.body.decode("UTF-8"))
+        div_id = data.get('device_id')  # unique
+        user_id = User.objects.get(unique_id=div_id).id
+
+        start_date = datetime.datetime.today() - timedelta(days=(7 ))
+        top5_applogs = AppLogs.objects.filter(
+            last_timestamp__gte=start_date).values(
+            'app_name').annotate(
+            sum_time = Sum('total_foreground_time'))[:5]
+        result = []
+        for applog in top5_applogs:
+            result.append(
+                {"label": applog['app_name'], "value": applog['sum_time']})
+
+        return JsonResponse({'result':result})
+
+class MostUsedAllUsersView(View):
+    def get(self, request, *args, **kwargs):
+            # data = request.GET
+            # data = json.loads(request.body.decode("UTF-8"))
+            max_applog = AppLogs.objects.values(
+                'app_name').annotate(
+                total_time=Sum('total_foreground_time')
+            ).order_by('-total_time').first()
+            return JsonResponse({'result': {'label':max_applog['app_name'],'value':max_applog['total_time']}})
+
+class MinUsedAllUsersView(View):
+    def get(self, request, *args, **kwargs):
+            # data = request.GET
+            # data = json.loads(request.body.decode("UTF-8"))
+            min_applog = AppLogs.objects.values(
+                'app_name').annotate(
+                total_time=Sum('total_foreground_time')
+            ).order_by('total_time').first()
+            return JsonResponse({'result': {'label':min_applog['app_name'],'value':min_applog['total_time']}})
+
+# class ActiveUsersLast7View(View):
+#     def get(self, request, *args, **kwargs):
+#         start_date = datetime.datetime.today() - timedelta(days=(7))
+#
+#         AppLogs.objects.filter(
+#             last_timestamp__gte=start_date).values(
+#             'app_name', '').annotate(
+#             sum_time=Sum('total_foreground_time')

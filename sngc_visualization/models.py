@@ -12,7 +12,7 @@ class AppLogs(models.Model):
     first_timestamp = models.DateTimeField(null=True, default=None)#install
     last_timestamp = models.DateTimeField(null=True, default=None)
     last_time_used = models.DateTimeField(null=True, default=None)
-    total_foreground_time = models.DateTimeField()
+    total_foreground_time = models.IntegerField(default=0)
     created_on = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
