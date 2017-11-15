@@ -104,8 +104,10 @@ class CurrentDateView(View):
             # data = json.loads(request.body.decode("UTF-8"))
             div_id = data.get('device_id')  # unique
             previous_datetime = datetime.datetime.today()
+            current_date_midnight = datetime.datetime(previous_datetime.year, previous_datetime.month, previous_datetime.day, 0,0,0,0);
+            print(current_date_midnight)
             user_id = User.objects.get(unique_id=div_id).id
-            today_applogs = AppLogs.objects.filter(user=user_id, last_timestamp__gte=previous_datetime)
+            today_applogs = AppLogs.objects.filter(user=user_id, last_timestamp__gte=current_date_midnight)
             result = []
             for applog in today_applogs:
                 result.append(
