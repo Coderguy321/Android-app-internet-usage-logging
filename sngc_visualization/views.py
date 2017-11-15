@@ -121,7 +121,7 @@ class TotalTimeView(View):
             # data = json.loads(request.body.decode("UTF-8"))
             div_id = data.get('device_id')  # unique
             user_id = User.objects.get(unique_id=div_id).id
-            top5_applogs = AppLogs.objects.values('app_name').annotate(total_time=Sum('total_foreground_time')).order_by('total_time')[:5]
+            top5_applogs = AppLogs.objects.values('app_name').annotate(total_time=Sum('total_foreground_time')).order_by('total_time')[:10]
             result = []
             for applog in top5_applogs:
                 print(applog)
