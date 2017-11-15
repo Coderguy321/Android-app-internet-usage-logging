@@ -73,7 +73,7 @@ class SngcVisualisationView(View):
         last_time_used_datetime = datetime.datetime.fromtimestamp(int(last_time_used_epoch))
 
         try:
-            last_app_log_entry = AppLogs.objects.filter(app_name=app_name).last()
+            last_app_log_entry = AppLogs.objects.filter(user=user.id, app_name=app_name).last()
             if last_app_log_entry.last_timestamp.date() == last_time_used_datetime.date:
                 last_app_log_entry.last_timestamp = last_timestamp
                 last_app_log_entry.save()
@@ -181,7 +181,7 @@ class LeastUsedView(View):
                 user=user_id).values(
                 'app_name').annotate(
                 total_time=Sum('total_foreground_time')
-            ).order_by('total_time').first()
+            ).order_by('total _time').first()
             return JsonResponse({'result': {'label':min_applog['app_name'],'value':min_applog['total_time']}})
 
 class Last7DaysView(View):
