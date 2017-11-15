@@ -140,7 +140,7 @@ class WeeklyView(View):
             start_date = datetime.datetime.today() - timedelta(days=(7 * 20 + 1))
             end_date = datetime.datetime.today() - timedelta(days=7*20)
             result = {}
-            for week in range(1,30):
+            for week in range(1,5):
                 start_date = end_date
                 end_date = end_date + timedelta(days=7)
 
