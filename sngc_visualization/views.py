@@ -137,8 +137,8 @@ class WeeklyView(View):
             div_id = data.get('device_id')  # unique
             user_id = User.objects.get(unique_id=div_id).id
             weeks_before = 1
-            start_date = datetime.datetime.today() - timedelta(days=(7 * 20 + 1))
-            end_date = datetime.datetime.today() - timedelta(days=7*20)
+            start_date = datetime.datetime.today() - timedelta(days=(7 * 4 + 1))
+            end_date = datetime.datetime.today() - timedelta(days=7*4)
             result = {}
             for week in range(1,5):
                 start_date = end_date
