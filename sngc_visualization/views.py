@@ -183,7 +183,7 @@ class LeastUsedView(View):
                 user=user_id).values(
                 'app_name').annotate(
                 total_time=Sum('total_foreground_time')
-            ).order_by('-total _time').first()
+            ).order_by('total _time').first()
             return JsonResponse({'result': {'label':min_applog['app_name'],'value':min_applog['total_time']}})
 
 class Last7DaysView(View):
