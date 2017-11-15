@@ -121,7 +121,7 @@ class TotalTimeView(View):
             # data = json.loads(request.body.decode("UTF-8"))
             div_id = data.get('device_id')  # unique
             user_id = User.objects.get(unique_id=div_id).id
-            top5_applogs = AppLogs.objects.values('app_name').annotate(total_time=Sum('total_foreground_time')).order_by('total_time')[:10]
+            top5_applogs = AppLogs.objects.values('app_name').annotate(total_time=Sum('total_foreground_time')).order_by('-total_time')[:10]
             result = []
             for applog in top5_applogs:
                 print(applog)
@@ -147,7 +147,7 @@ class WeeklyView(View):
                 top5_applogs = AppLogs.objects.filter(last_timestamp__gte=start_date, last_timestamp__lte=end_date
                              ).values('app_name'
                              ).annotate(total_time=Sum('total_foreground_time')
-                             ).order_by('total_time')[:5]
+                             ).order_by('-total_time')[:5]
 
                 diff_apps_single_week = []
                 for applog in top5_applogs:
@@ -183,7 +183,7 @@ class LeastUsedView(View):
                 user=user_id).values(
                 'app_name').annotate(
                 total_time=Sum('total_foreground_time')
-            ).order_by('total _time').first()
+            ).order_by('-total _time').first()
             return JsonResponse({'result': {'label':min_applog['app_name'],'value':min_applog['total_time']}})
 
 class Last7DaysView(View):
@@ -222,7 +222,7 @@ class MinUsedAllUsersView(View):
             min_applog = AppLogs.objects.values(
                 'app_name').annotate(
                 total_time=Sum('total_foreground_time')
-            ).order_by('total_time').first()
+            ).order_by('-total_time').first()
             return JsonResponse({'result': {'label':min_applog['app_name'],'value':min_applog['total_time']}})
 
 # class ActiveUsersLast7View(View):
