@@ -4,9 +4,10 @@ from .models import AppLogs,User
 
 
 class AppLogsAdmin(admin.ModelAdmin):
-        list_display = ('app_name', 'first_timestamp','last_timestamp', 'total_foreground_time','username')
-        def username(self, obj):
-            return obj.user.unique_id
+    ordering = ('-last_timestamp',)
+    list_display = ('app_name', 'first_timestamp','last_timestamp', 'total_foreground_time','username')
+    def username(self, obj):
+        return obj.user.unique_id
 admin.site.register(AppLogs, AppLogsAdmin)
 
 class UserAdmin(admin.ModelAdmin):
