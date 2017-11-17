@@ -197,7 +197,7 @@ class Last7DaysView(View):
         top5_applogs = AppLogs.objects.filter(
             last_timestamp__gte=start_date).values(
             'app_name').annotate(
-            sum_time = Sum('total_foreground_time'))[:5]
+            sum_time = Sum('total_foreground_time'))[:10]
         result = []
         for applog in top5_applogs:
             result.append(
@@ -222,14 +222,18 @@ class MinUsedAllUsersView(View):
             min_applog = AppLogs.objects.values(
                 'app_name').annotate(
                 total_time=Sum('total_foreground_time')
-            ).order_by('-total_time').first()
+            ).order_by('total_time').first()
             return JsonResponse({'result': {'label':min_applog['app_name'],'value':min_applog['total_time']}})
 
-# class ActiveUsersLast7View(View):
-#     def get(self, request, *args, **kwargs):
-#         start_date = datetime.datetime.today() - timedelta(days=(7))
-#
-#         AppLogs.objects.filter(
-#             last_timestamp__gte=start_date).values(
-#             'app_name', '').annotate(
-#             sum_time=Sum('total_foreground_time')
+class ActiveUsersLast7View(View):
+    def get(self, request, *args, **kwargs):
+        start_date = datetime.datetime.today() - timedelta(days=30)
+        result = []
+        data = AppLogs.objects.filter(
+            last_timestamp__gte=start_date).values(
+            'user__unique_id','app_name').annotate(
+            sum_time=Sum('total_foreground_time'))
+
+        for d in data:
+            result.append({'user':d['user__unique_id'], 'app_name':d['app_name'], 'time':d['sum_time']})
+        return JsonResponse({'result':result})
