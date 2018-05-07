@@ -1,15 +1,30 @@
-# import datetime
-# import json
-# from django.views import View
-# from django.views.decorators.csrf import csrf_exempt
-# from django.utils.decorators import method_decorator
-# from .models import User
-#
-# from .models import AppLogs
-# from django.http import JsonResponse
-# from django.utils.crypto import get_random_string
-# from datetime import timedelta
-# from django.db.models import Sum, Count, Max, Avg
+import datetime
+import json
+from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.http import JsonResponse
+from django.utils.crypto import get_random_string
+from datetime import timedelta
+from django.db.models import Sum, Count, Max, Avg
+
+from sngc_visualization.models import Alert
+
+
+class Testing(View):
+    def get(self, request, *args, **kwargs):
+        return JsonResponse({'name': "testing"})
+
+    def post(self, request):
+        data = request.POST
+        label = data.get('label')
+        timestamp_epoch = data.get('timeStamp')
+        # total_foreground_time_epoch = data.get('totalTimeInForeground')
+        timestamp = datetime.datetime.fromtimestamp(int(timestamp_epoch)).strftime('%Y-%m-%d %H:%M:%S')
+        model_obj = Alert.objects.create(app_name=label,first_timestamp=timestamp)
+        return JsonResponse({'success':True})
+
+
 #
 #
 #
