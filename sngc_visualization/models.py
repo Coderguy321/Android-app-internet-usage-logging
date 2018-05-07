@@ -9,5 +9,11 @@ from django.db import models
 class Alert(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid1)
     label = models.CharField(max_length=100)
-    timestamp = models.IntegerField(null=True, default=None)#install
+    timestamp = models.DateTimeField(null=True, default=None)#install
+    # user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+class XAlert(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid1)
+    label = models.CharField(max_length=100)
+    timestamp = models.DateTimeField(null=True, default=None)#install
     # user = models.ForeignKey(User, on_delete=models.CASCADE)

@@ -1,14 +1,12 @@
-# from django.contrib import admin
-# from .models import AppLogs,User
+from django.contrib import admin
+from .models import Alert
 # # Register your models here.
 #
 #
-# class AppLogsAdmin(admin.ModelAdmin):
+class AlertAdmin(admin.ModelAdmin):
 #     ordering = ('-last_timestamp',)
-#     list_display = ('app_name', 'first_timestamp','last_timestamp', 'total_foreground_time','username')
-#     def username(self, obj):
-#         return obj.user.unique_id
-# admin.site.register(AppLogs, AppLogsAdmin)
+    list_display = ('label', 'timestamp')
+admin.site.register(Alert, AlertAdmin)
 #
 # class UserAdmin(admin.ModelAdmin):
 #     list_display = ('device_id', 'unique_id')

@@ -12,6 +12,10 @@ from sngc_visualization.models import Alert
 
 
 class Testing(View):
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super(Testing, self).dispatch(request, *args, **kwargs)
+
     def get(self, request, *args, **kwargs):
         return JsonResponse({'name': "testing"})
 
@@ -19,9 +23,12 @@ class Testing(View):
         data = request.POST
         label = data.get('label')
         timestamp_epoch = data.get('timeStamp')
-        # total_foreground_time_epoch = data.get('totalTimeInForeground')
-        timestamp = datetime.datetime.fromtimestamp(int(timestamp_epoch)).strftime('%Y-%m-%d %H:%M:%S')
-        model_obj = Alert.objects.create(app_name=label,first_timestamp=timestamp)
+        # # timestamp = data.get('totalTimeInForeground')
+        # import time
+        # time_tuple = time.strptime(timestamp_epoch, '%Y-%m-%d %H:%M:%S')
+        # time_epoch = time.mktime(time_tuple)
+        # timestamp = datetime.datetime.fromtimestamp(int(timestamp_epoch)).strftime('%Y-%m-%d %H:%M:%S')
+        model_obj = Alert.objects.create(label=label,timestamp=timestamp_epoch)
         return JsonResponse({'success':True})
 
 
