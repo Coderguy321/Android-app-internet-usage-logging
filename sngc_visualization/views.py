@@ -11,10 +11,10 @@ from django.db.models import Sum, Count, Max, Avg
 from sngc_visualization.models import Alert
 
 
-class Testing(View):
+class CameraView(View):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
-        return super(Testing, self).dispatch(request, *args, **kwargs)
+        return super(CameraView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         return JsonResponse({'name': "testing"})
@@ -23,13 +23,43 @@ class Testing(View):
         data = request.POST
         label = data.get('label')
         timestamp_epoch = data.get('timeStamp')
+        percentage = data.get('percentage')
         # # timestamp = data.get('totalTimeInForeground')
         # import time
         # time_tuple = time.strptime(timestamp_epoch, '%Y-%m-%d %H:%M:%S')
         # time_epoch = time.mktime(time_tuple)
         # timestamp = datetime.datetime.fromtimestamp(int(timestamp_epoch)).strftime('%Y-%m-%d %H:%M:%S')
-        model_obj = Alert.objects.create(label=label,timestamp=timestamp_epoch)
+        model_obj = Alert.objects.create(label=label,timestamp=timestamp_epoch, percentage=percentage)
         return JsonResponse({'success':True})
+
+
+
+class StatusView(View):
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super(StatusView, self).dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        # current_time = datetime.datetime.now()
+        # seconds_5 = current_time - datetime.timedelta(seconds=10)
+
+        import pytz
+
+        current_time = datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
+        seconds_5 = current_time - datetime.timedelta(seconds=10)
+        print("*************************")
+        print(current_time)
+        print(seconds_5)
+        # for a in Alert.objects.all():
+        #     print(a.timestamp)
+
+        result = Alert.objects.values('label').filter(timestamp__gte=seconds_5).count()
+        print("*************************")
+        print(result)
+        return JsonResponse(
+            {"cameraName": "person",
+             "status":int(result)}
+        )
 
 
 #
